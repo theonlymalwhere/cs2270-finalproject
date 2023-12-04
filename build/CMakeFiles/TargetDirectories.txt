@@ -1,2 +1,0 @@
-/Users/sroo/co/cu/datastructures/cs2270-finalproject/build/CMakeFiles/edit_cache.dir
-/Users/sroo/co/cu/datastructures/cs2270-finalproject/build/CMakeFiles/rebuild_cache.dir
