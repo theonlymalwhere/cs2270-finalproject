@@ -18,54 +18,17 @@
 
 using namespace std;
 
-class test_Graph : public ::testing::Test {
+class test_Cuckoo : public ::testing::Test {
 protected:
-	// This function runs only once before any TEST_F function
-	static void SetUpTestCase(){
-		std::ofstream outgrade("./total_grade.txt");
-		if(outgrade.is_open()){
-			outgrade.clear();
-			outgrade << (int)0;
-			outgrade.close();
-		}
-	}
-
-	// This function runs after all TEST_F functions have been executed
-	static void TearDownTestCase(){
-		std::ofstream outgrade("./total_grade.txt");
-		if(outgrade.is_open()){
-			outgrade.clear();
-			outgrade << (int)std::ceil(100*total_grade/max_grade);
-			outgrade.close();
-			std::cout << "Total Grade is : " << (int)std::ceil(100*total_grade/max_grade) << std::endl;
-		}
-	}
-
-	void add_points_to_grade(double points){
-		if(!::testing::Test::HasFailure()){
-			total_grade += points;
-		}
-	}
-
 	// this function runs before every TEST_F function
 	void SetUp() override {}
 
 	// this function runs after every TEST_F function
-	void TearDown() override {
-		std::ofstream outgrade("./total_grade.txt");
-		if(outgrade.is_open()){
-			outgrade.clear();
-			outgrade << (int)std::ceil(100*total_grade/max_grade);
-			outgrade.close();
-		}
-	}
-	
-	static double total_grade;
-	static double max_grade;
+	void TearDown() override {}
 };
 
-double test_Graph::total_grade = 0;
-double test_Graph::max_grade = 144;
+double test_Cuckoo::total_grade = 0;
+double test_Cuckoo::max_grade = 144;
 
 
 // forward declaration of helpers. read and learn from them!
@@ -75,7 +38,7 @@ shared_ptr<Node> find(shared_ptr<Graph> graph, string label);
 
 // Unit Tests
 
-TEST_F(test_Graph, Graph_EdgeSetType){
+TEST_F(test_Cuckoo, Cuckoo_init){
   shared_ptr<Node> a(new Node("a"));
   shared_ptr<Node> b(new Node("b"));
   shared_ptr<Edge> ab(new Edge(a, b));
