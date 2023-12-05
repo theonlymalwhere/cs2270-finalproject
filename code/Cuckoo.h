@@ -11,6 +11,7 @@ using namespace std;
 
 struct node {
     uint16_t fingerprint;
+    bool removed;
 };
 
 typedef vector<shared_ptr<node>> hash_table;
@@ -39,6 +40,7 @@ private:
     size_t short_hash(uint16_t input);
     int kickToOtherBucket(shared_ptr<filter> filter, int srcIndex);
     shared_ptr<node> find(shared_ptr<filter> filter, std::string input);
+    bool nodeIsEmpty(shared_ptr<node> n);
 };
 
 #endif  // CUCKOO_H__
