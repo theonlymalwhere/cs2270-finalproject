@@ -3,13 +3,21 @@
 Cuckoo::Cuckoo(){}
 Cuckoo::~Cuckoo(){}
 
-shared_ptr<filter> Cuckoo::initFilter(unsigned int capacity, unsigned int maxBucketKicks) {
+shared_ptr<filter> Cuckoo::initFilter(unsigned int maxBucketKicks, unsigned int numBuckets, unsigned int nodesPerBucket) {
     shared_ptr<filter> ret(new filter);
-    ret->capacity = capacity;
-    ret->fullBuckets = 0;
-    ret->table = shared_ptr<hash_table>(new hash_table(capacity));
+    ret->capacity = (numBuckets * nodesPerBucket);
+    ret->size = 0;
+    ret->nodesPerBucket = nodesPerBucket;
+    ret->numBuckets = numBuckets;
     ret->maxBucketKicks = maxBucketKicks;
 
+    ret->table = shared_ptr<hash_table>(new hash_table(numBuckets));
+    int i = 0;
+    while (i < numBuckets) {
+        ret->table->at(i) = shared_ptr<bucket>(new bucket(nodesPerBucket));
+        i++;
+    }
+    
     return ret;
 }
 
@@ -22,33 +30,38 @@ shared_ptr<node> Cuckoo::initNode(uint16_t fingerprint) {
 }
 
 void Cuckoo::insert(shared_ptr<filter> filter, string input) {
-    if (filter->fullBuckets >= filter->capacity) { return; }
+    if (filter->size >= filter->capacity) { return; }
 
     auto h = str_hash(input);
     auto f = fingerprint(h);
 
-    auto idx1 = h % filter->capacity;
-    auto idx2 = idx1 ^ (short_hash(f) % filter->capacity);
-    int free_idx; // in case we need to kick entries around
+    auto idx1 = h % filter->numBuckets;
+    auto idx2 = idx1 ^ (short_hash(f) % filter->numBuckets);
 
-    shared_ptr<node> newnode = initNode(f);
-
-    if (nodeIsEmpty(filter->table->at(idx1))) {
-        filter->table->at(idx1) = newnode;
-        filter->fullBuckets++;
+    if (bucketHasRoom(filter, idx1)) {
+        addToBucket(filter, idx1, f);
         return;
-    } else if (nodeIsEmpty(filter->table->at(idx2))) {
-        filter->table->at(idx2) = newnode;
-        filter->fullBuckets++;
+    } else if (bucketHasRoom(filter, idx2)) {
+        addToBucket(filter, idx2, f);
         return;
-    } else { // Have to kick an existing item to another bucket
+    } else { // Have to kick an existing item to another bucket or slot in this bucket
         // Randomly select a 0 or a 1. We need this to be able to pick which
         // of the two index types we'll be evicting.
         int kick_idx = (rand() % 2 == 0) ? idx1 : idx2;
-        free_idx = kickToOtherBucket(filter, kick_idx);
-        if (free_idx >= 0) {
-            filter->table->at(free_idx) = newnode;
-            filter->fullBuckets++;
+        //free_idx = kickBucket(filter, kick_idx);
+
+        int kick = 0;
+        while (kick < filter->maxBucketKicks) {
+            int rand_idx = rand() % filter->nodesPerBucket;
+            uint16_t tmp = filter->table->at(kick_idx)->at(rand_idx)->fingerprint;
+            filter->table->at(kick_idx)->at(rand_idx)->fingerprint = f;
+            f = tmp;
+
+            kick_idx = kick_idx ^ (short_hash(f) % filter->numBuckets);
+            if (bucketHasRoom(filter, kick_idx)) {
+                addToBucket(filter, kick_idx, f);
+            }
+            kick++;
         }
     }
 }
@@ -57,7 +70,7 @@ void Cuckoo::remove(shared_ptr<filter> filter, string input) {
     auto existing_node = find(filter, input);
     if (existing_node != nullptr) {
         existing_node->removed = true;
-        filter->fullBuckets--;
+        filter->size--;
     }
 }
 
@@ -65,20 +78,14 @@ bool Cuckoo::contains(shared_ptr<filter> filter, string input) {
     auto h = str_hash(input);
     auto f = fingerprint(h);
 
-    auto idx1 = h % filter->capacity;
-    auto idx2 = idx1 ^ (short_hash(f) % filter->capacity);
+    auto idx1 = h % filter->numBuckets;
+    auto idx2 = idx1 ^ (short_hash(f) % filter->numBuckets);
 
-    if (!nodeIsEmpty(filter->table->at(idx1)) && filter->table->at(idx1)->fingerprint == f) {
-        return true;
-    } else if (!nodeIsEmpty(filter->table->at(idx2)) && filter->table->at(idx2)->fingerprint == f) {
-        return true;
-    } else {
-        return false;
-    }
+    return (bucketContains(filter, idx1, f) || bucketContains(filter, idx2, f) );
 }
 
 float Cuckoo::capacityPct(shared_ptr<filter> filter) {
-    return (filter->fullBuckets / filter->capacity);
+    return (filter->size / filter->capacity);
 }
 
 uint16_t Cuckoo::fingerprint(size_t hash) {
@@ -104,34 +111,68 @@ bool Cuckoo::nodeIsEmpty(shared_ptr<node> n) {
     return n == nullptr || n->removed;
 }
 
-int Cuckoo::kickToOtherBucket(shared_ptr<filter> filter, int srcIndex) {
-    int kick = 0;
-    int i = srcIndex;
-    auto fingerprint_to_insert = filter->table->at(srcIndex)->fingerprint;
-
-    while (kick < filter->maxBucketKicks) {
-        int rand_idx = rand() % filter->capacity;
-        std::swap(filter->table->at(rand_idx), filter->table->at(i));
-
-        i = i ^ (short_hash(fingerprint_to_insert) % filter->capacity);
-        if (nodeIsEmpty(filter->table->at(i))) { return i; }
-        kick++;
+bool Cuckoo::bucketHasRoom(shared_ptr<filter> filter, int bucket_idx) {
+    auto b = filter->table->at(bucket_idx);
+    for (int i = 0; i < b->size(); i++) {
+        if (nodeIsEmpty(b->at(i))) {
+            return true;
+        }
     }
-    return -1; // No other bucket found
+    return false;
+}
+
+bool Cuckoo::bucketContains(shared_ptr<filter> filter, int bucket_idx, uint16_t f) {
+    auto b = filter->table->at(bucket_idx);
+    for (int i = 0; i < b->size(); i++) {
+        if (!nodeIsEmpty(b->at(i))) {
+            if (b->at(i)->fingerprint == f) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+shared_ptr<node> Cuckoo::bucketFind(shared_ptr<filter> filter, int bucket_idx, uint16_t f) {
+    auto b = filter->table->at(bucket_idx);
+    for (int i = 0; i < b->size(); i++) {
+        if (!nodeIsEmpty(b->at(i))) {
+            if (b->at(i)->fingerprint == f) {
+                return b->at(i);
+            }
+        }
+    }
+    return nullptr;
+}
+
+void Cuckoo::addToBucket(shared_ptr<filter> filter, int bucket_idx, uint16_t f) {
+    auto b = filter->table->at(bucket_idx);
+    for (int i = 0; i < b->size(); i++) {
+        if (b->at(i) == nullptr) {
+            b->at(i) = initNode(f);
+            filter->size++;
+            return;
+        } else if (b->at(i)->removed) {
+            b->at(i)->fingerprint = f;
+            b->at(i)->removed = false;
+            filter->size++;
+            return;
+        }
+    }
 }
 
 shared_ptr<node> Cuckoo::find(shared_ptr<filter> filter, std::string input) {
     auto h = str_hash(input);
     auto f = fingerprint(h);
 
-    auto idx1 = h % filter->capacity;
-    auto idx2 = idx1 ^ (short_hash(f) % filter->capacity);
+    auto idx1 = h % filter->numBuckets;
+    auto idx2 = idx1 ^ (short_hash(f) % filter->numBuckets);
 
-    if (filter->table->at(idx1)->fingerprint == f && !filter->table->at(idx1)->removed) {
-        return filter->table->at(idx1);
-    } else if (filter->table->at(idx2)->fingerprint == f && !filter->table->at(idx2)->removed) {
-        return filter->table->at(idx2);
+    auto ret = bucketFind(filter, idx1, f); // will be nullptr if not found
+
+    if (ret != nullptr) {
+        return ret;
     } else {
-        return nullptr;
+        return bucketFind(filter, idx2, f); // will be nullptr if not found
     }
 }

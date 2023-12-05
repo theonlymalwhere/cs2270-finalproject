@@ -5,7 +5,7 @@ using namespace std;
 
 int main(){
     Cuckoo c;
-    auto filter = c.initFilter(10, 500);
+    auto filter = c.initFilter(500, 10, 10);
     c.insert(filter, "https://www.google.com");
     c.insert(filter, "https://www.google.com");
     c.insert(filter, "https://www.google.com");

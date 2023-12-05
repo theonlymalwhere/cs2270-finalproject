@@ -14,13 +14,15 @@ struct node {
     bool removed;
 };
 
-typedef vector<shared_ptr<node>> hash_table;
+typedef vector<shared_ptr<node>> bucket;
+typedef vector<shared_ptr<bucket>> hash_table;
 
 struct filter {
     shared_ptr<hash_table> table;
+    unsigned int numBuckets;
+    unsigned int nodesPerBucket;
     unsigned int capacity;
-    int fullBuckets;
-    int fingerprintLength;
+    int size;
     unsigned int maxBucketKicks;
 };
 
@@ -28,7 +30,7 @@ class Cuckoo {
 public:
     Cuckoo();
     ~Cuckoo();
-    shared_ptr<filter> initFilter(unsigned int capacity, unsigned int maxBucketKicks);
+    shared_ptr<filter> initFilter(unsigned int maxBucketKicks, unsigned int numBuckets, unsigned int nodesPerBucket);
     shared_ptr<node> initNode(uint16_t fingerprint);
     void insert(shared_ptr<filter> filter, std::string input);
     void remove(shared_ptr<filter> filter, std::string input);
@@ -38,9 +40,12 @@ private:
     uint16_t fingerprint(size_t hash);
     size_t str_hash(std::string input);
     size_t short_hash(uint16_t input);
-    int kickToOtherBucket(shared_ptr<filter> filter, int srcIndex);
     shared_ptr<node> find(shared_ptr<filter> filter, std::string input);
     bool nodeIsEmpty(shared_ptr<node> n);
+    bool bucketHasRoom(shared_ptr<filter> filter, int bucket_idx);
+    bool bucketContains(shared_ptr<filter> filter, int bucket_idx, uint16_t f);
+    shared_ptr<node> bucketFind(shared_ptr<filter> filter, int bucket_idx, uint16_t f);
+    void addToBucket(shared_ptr<filter> filter, int bucket_idx, uint16_t f);
 };
 
 #endif  // CUCKOO_H__
