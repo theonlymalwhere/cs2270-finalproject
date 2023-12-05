@@ -26,5 +26,19 @@ int main(){
         cout << "Filter remove() seems to work for simple cases!" << endl;
     }
 
+    // Rudimentary cuckoo check
+    c.insert(filter, "https://www.google.com");
+    c.insert(filter, "https://www.google.com");
+    c.insert(filter, "https://www.google.com");
+    c.remove(filter, "https://www.google.com");
+    c.remove(filter, "https://www.google.com");
+    c.remove(filter, "https://www.google.com");
+
+    // if (c.contains(filter, "https://www.google.com")) {
+    //     cout << "OHNO!" << endl;
+    // } else {
+    //     cout << "Cuckoo add and remove seems to work!" << endl;
+    // }
+
     return 0;
 }
