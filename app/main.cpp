@@ -5,11 +5,14 @@ using namespace std;
 
 int main(){
     Cuckoo c;
-    auto filter = c.initFilter(4, 500);
+    auto filter = c.initFilter(10, 500);
     c.insert(filter, "https://www.google.com");
-    c.insert(filter, "https://www.purple.com");
-    c.insert(filter, "https://www.nilenet.com");
-    c.insert(filter, "https://www.yahoo.com");
+    c.insert(filter, "https://www.google.com");
+    c.insert(filter, "https://www.google.com");
+
+    // These two produce identical hashes:
+    // c.insert(filter, "https://www.purple.com");
+    // c.insert(filter, "https://www.nilenet.com");
 
     // Rudimentary cuckoo check
     // c.insert(filter, "https://www.google.com");

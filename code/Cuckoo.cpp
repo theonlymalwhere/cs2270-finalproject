@@ -28,9 +28,7 @@ void Cuckoo::insert(shared_ptr<filter> filter, string input) {
     auto f = fingerprint(h);
 
     auto idx1 = h % filter->capacity;
-    cout << "idx1 = " << idx1 << endl;
     auto idx2 = idx1 ^ (short_hash(f) % filter->capacity);
-    cout << "idx2 = " << idx2 << endl;
     int free_idx; // in case we need to kick entries around
 
     shared_ptr<node> newnode = initNode(f);
@@ -38,20 +36,16 @@ void Cuckoo::insert(shared_ptr<filter> filter, string input) {
     if (nodeIsEmpty(filter->table->at(idx1))) {
         filter->table->at(idx1) = newnode;
         filter->fullBuckets++;
+        return;
     } else if (nodeIsEmpty(filter->table->at(idx2))) {
         filter->table->at(idx2) = newnode;
         filter->fullBuckets++;
+        return;
     } else { // Have to kick an existing item to another bucket
         // Randomly select a 0 or a 1. We need this to be able to pick which
         // of the two index types we'll be evicting.
-        int kick_idx_type = rand() % 2;
-        if (kick_idx_type == 0) {
-            // Using idx1
-            free_idx = kickToOtherBucket(filter, idx1);
-        } else {
-            // Using idx2
-            free_idx = kickToOtherBucket(filter, idx2);
-        }
+        int kick_idx = (rand() % 2 == 0) ? idx1 : idx2;
+        free_idx = kickToOtherBucket(filter, kick_idx);
         if (free_idx >= 0) {
             filter->table->at(free_idx) = newnode;
             filter->fullBuckets++;
@@ -88,8 +82,8 @@ float Cuckoo::capacityPct(shared_ptr<filter> filter) {
 }
 
 uint16_t Cuckoo::fingerprint(size_t hash) {
-    // The concept of a "fingerprint" is basically some programmatically deterministic portion
-    // of an input hash. In this case I want to use the last 16 bits of the size_t hash.
+    // The concept of a "fingerprint" is basically some set-sized sub-portion of an
+    // input hash. In this case I want to use the last 16 bits of the size_t hash.
     return hash & 0xFFFF;
 }
 
@@ -117,13 +111,10 @@ int Cuckoo::kickToOtherBucket(shared_ptr<filter> filter, int srcIndex) {
 
     while (kick < filter->maxBucketKicks) {
         int rand_idx = rand() % filter->capacity;
-        auto tmp = filter->table->at(rand_idx)->fingerprint;
-        
-        filter->table->at(rand_idx)->fingerprint = filter->table->at(i)->fingerprint;
-        filter->table->at(i)->fingerprint = tmp;
+        std::swap(filter->table->at(rand_idx), filter->table->at(i));
 
         i = i ^ (short_hash(fingerprint_to_insert) % filter->capacity);
-        if (filter->table->at(i)->fingerprint == 0) { return i; }
+        if (nodeIsEmpty(filter->table->at(i))) { return i; }
         kick++;
     }
     return -1; // No other bucket found
