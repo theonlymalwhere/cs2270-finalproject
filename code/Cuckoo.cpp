@@ -136,9 +136,9 @@ shared_ptr<node> Cuckoo::find(shared_ptr<filter> filter, std::string input) {
     auto idx1 = h % filter->capacity;
     auto idx2 = idx1 ^ (short_hash(f) % filter->capacity);
 
-    if (filter->table->at(idx1)->fingerprint == f) {
+    if (filter->table->at(idx1)->fingerprint == f && !filter->table->at(idx1)->removed) {
         return filter->table->at(idx1);
-    } else if (filter->table->at(idx2)->fingerprint == f) {
+    } else if (filter->table->at(idx2)->fingerprint == f && !filter->table->at(idx2)->removed) {
         return filter->table->at(idx2);
     } else {
         return nullptr;
