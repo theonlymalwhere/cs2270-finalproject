@@ -14,7 +14,7 @@
 // else. It is also not portable because it is not supported by the
 // C++ spec, and therefore might not work with all compilers.
 #define private public
-#include "../src/Cuckoo.h"
+#include "../code/Cuckoo.h"
 
 using namespace std;
 

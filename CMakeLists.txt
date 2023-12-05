@@ -14,8 +14,8 @@ project(${ProjectId})
 
 # defince cmake variables for file locations
 file(GLOB USER_FILES 
-"src/*.h"
-"src/*.cpp"
+"code/*.h"
+"code/*.cpp"
 )
 file(GLOB TEST_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} 
 "tests/test_*.cpp"
