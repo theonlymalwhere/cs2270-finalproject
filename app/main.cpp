@@ -14,7 +14,7 @@ int main(){
     Cuckoo c;
     shared_ptr<filter> f = c.initFilter(500, 10, 10);
     
-    cout << "I want to demonstrate " << endl;
+    cout << "I want to demonstrate the utility of the Cuckoo Filter as the backend for URL filtering (deny/allowlisting)." << endl;
     cout << "First, I will add about 80 URLs to our Cuckoo Filter." << endl;
     cout << "To do this, I'm first going to make a vector and then iteratively grab each URL from it and add it to the Filter." << endl;
     vector<string> url_blocklist;
