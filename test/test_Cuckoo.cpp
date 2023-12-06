@@ -83,15 +83,15 @@ TEST_F(test_Cuckoo, insert_contains_remove) {
     ASSERT_NO_FATAL_FAILURE(c.remove(f, "https://www.google.com"));
 }
 
-TEST_F(test_Cuckoo, fill_table) {
+TEST_F(test_Cuckoo, fill_big_table) {
     Cuckoo c;
-    shared_ptr<filter> f = c.initFilter(500, 10, 10);
+    shared_ptr<filter> f = c.initFilter(500, 100, 100);
     
     // Insert the same string twice; this should result in us putting the value first
     // in a bucket with an index that's a hash of its fingerprint against the capacity,
     // and second (as a duplicate) in a bucket whose index is the first bucket's index
     // bitwise-XOR'd against the fingerprint itself hashed to the capacity size.
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10000; i++) {
         string randstr = "";
         randstr += (rand() % 500000);
         c.insert(f, randstr);
