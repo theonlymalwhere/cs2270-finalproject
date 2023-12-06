@@ -14,9 +14,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install clang
+      run: sudo apt-get install clang
+      shell: bash
+
     - name: Configure CMake
       working-directory: ${{github.workspace}}/build
+      env:
+        CC:   clang
+        CXX:  clang++
       run: cmake ..
+      shell: bash
 
     - name: Build
       working-directory: ${{github.workspace}}/build
