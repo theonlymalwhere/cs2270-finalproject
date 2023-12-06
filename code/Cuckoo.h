@@ -37,7 +37,6 @@ public:
     bool contains(shared_ptr<filter> filter, string input);
     float capacityPct(shared_ptr<filter> filter);
     void printFilter(shared_ptr<filter> filter);
-    void printBucket(shared_ptr<bucket> bucket);
 private:
     uint16_t fingerprint(size_t hash);
     size_t str_hash(string input);
@@ -48,6 +47,7 @@ private:
     bool bucketContains(shared_ptr<filter> filter, int bucket_idx, uint16_t f);
     shared_ptr<node> bucketFind(shared_ptr<filter> filter, int bucket_idx, uint16_t f);
     void addToBucket(shared_ptr<filter> filter, int bucket_idx, uint16_t f);
+    void printBucket(shared_ptr<bucket> bucket);
 };
 
 #endif  // CUCKOO_H__
