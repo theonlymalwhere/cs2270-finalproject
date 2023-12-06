@@ -32,21 +32,6 @@ protected:
 	void TearDown() override {}
 };
 
-// I have borrowed this random string generator from our Hashes homework (PA7)
-std::string random_string(size_t length) {
-  auto randchar = []() -> char {
-    const char charset[] =
-    "0123456789"
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz";
-    const size_t max_index = (sizeof(charset) - 1);
-    return charset[rand() % max_index];
-  };
-  std::string str(length,0);
-  std::generate_n(str.begin(), length, randchar);
-  return str;
-}
-
 // Unit Tests
 
 TEST_F(test_Cuckoo, initFilter) {
@@ -121,6 +106,25 @@ TEST_F(test_Cuckoo, capacity_pct) {
     c.insert(f, "https://www.google.com");
 
     ASSERT_EQ(c.capacityPct(f), (float) 0.01);
+
+    c.insert(f, "https://gizmodo.com");
+    c.insert(f, "https://meraki.com");
+    c.insert(f, "https://apple.com");
+    c.insert(f, "https://colorado.edu");
+    c.insert(f, "https://cam.ac.uk");
+    c.insert(f, "https://ox.ac.uk");
+    c.insert(f, "https://facebook.com");
+    c.insert(f, "https://instagram.com");
+    c.insert(f, "https://jalopnik.com");
+    ASSERT_EQ(c.capacityPct(f), (float) 0.1);
+
+    // Ensure that capacity percentage moves accordingly if we shrink the table
+    c.remove(f, "https://gizmodo.com");
+    c.remove(f, "https://meraki.com");
+    c.remove(f, "https://apple.com");
+    c.remove(f, "https://colorado.edu");
+    c.remove(f, "https://cam.ac.uk");
+    ASSERT_EQ(c.capacityPct(f), (float) 0.05);
 }
 
 // We need to test that we can deterministically remove things that have been kicked to some other bucket.
