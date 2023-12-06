@@ -1,3 +1,7 @@
+// Author: Scott Beru
+// Identikey: scbe9211
+// GH Username: scooberu
+
 #include "Cuckoo.h"
 
 Cuckoo::Cuckoo(){}
