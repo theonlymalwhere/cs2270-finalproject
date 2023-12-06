@@ -32,15 +32,17 @@ public:
     ~Cuckoo();
     shared_ptr<filter> initFilter(unsigned int maxBucketKicks, unsigned int numBuckets, unsigned int nodesPerBucket);
     shared_ptr<node> initNode(uint16_t fingerprint);
-    void insert(shared_ptr<filter> filter, std::string input);
-    void remove(shared_ptr<filter> filter, std::string input);
-    bool contains(shared_ptr<filter> filter, std::string input);
+    void insert(shared_ptr<filter> filter, string input);
+    void remove(shared_ptr<filter> filter, string input);
+    bool contains(shared_ptr<filter> filter, string input);
     float capacityPct(shared_ptr<filter> filter);
+    void printFilter(shared_ptr<filter> filter);
+    void printBucket(shared_ptr<bucket> bucket);
 private:
     uint16_t fingerprint(size_t hash);
-    size_t str_hash(std::string input);
+    size_t str_hash(string input);
     size_t short_hash(uint16_t input);
-    shared_ptr<node> find(shared_ptr<filter> filter, std::string input);
+    shared_ptr<node> find(shared_ptr<filter> filter, string input);
     bool nodeIsEmpty(shared_ptr<node> n);
     bool bucketHasRoom(shared_ptr<filter> filter, int bucket_idx);
     bool bucketContains(shared_ptr<filter> filter, int bucket_idx, uint16_t f);
