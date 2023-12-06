@@ -25,3 +25,11 @@ We try this process a total of `maxBucketKicks` (a parameter of the Filter) time
 
 #### Remove
 This all makes Remove really simple by comparison; for any given value, we know that its fingerprint will reside in one of its two eligible buckets, so we look in both of them to see if the fingerprint is there; if so, we mark that slot in the bucket `removed`.
+
+## Use Cases
+I have used the app/main.cpp file for a small walkthrough of how a Cuckoo Filter might be used for URL filtering (in e.g. a browser or a network appliance that does L7 flow inspection). You can run this for yourself by cloning this repo and following the standard workflow we used throughout the course:
+1. `cd ./build && cmake ..`
+2. `make`
+3. `./run_app`
+
+**...OR...** if you don't want to clone this and build/run all that yourself, you can go to [GitHub Actions](https://github.com/scooberu/cs2270-finalproject/actions) for this project and click on the latest (top) Workflow; it will contain a stage for `Run` that shows the full output of running `./run_app` on GitHub's architecture.
