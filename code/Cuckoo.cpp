@@ -193,9 +193,11 @@ void Cuckoo::printBucket(shared_ptr<bucket> bucket) {
     for (int i = 0; i < bucket->size(); i++) {
         cout << "\t";
         if (bucket->at(i) != NULL) {
-            cout << "[" << i << "]: " << bucket->at(i)->fingerprint;
+            cout << "[" << i << "]: ";
             if (bucket->at(i)->removed) {
                 cout << "[REMOVED]";
+            } else {
+                 cout << bucket->at(i)->fingerprint;
             }
             cout << endl;
         } else {
