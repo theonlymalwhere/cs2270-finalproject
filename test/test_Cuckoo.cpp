@@ -42,6 +42,10 @@ TEST_F(test_Cuckoo, initFilter) {
     ASSERT_EQ(f->maxBucketKicks, 500);
     ASSERT_EQ(f->nodesPerBucket, 10);
     ASSERT_EQ(f->numBuckets, 10);
+    ASSERT_EQ(f->numBuckets, f->table->size());
+    for (int i = 0; i < f->numBuckets; i++) {
+        ASSERT_EQ(f->table->at(i)->size(), f->nodesPerBucket);
+    }
 }
 
 TEST_F(test_Cuckoo, initNode) {
@@ -51,6 +55,7 @@ TEST_F(test_Cuckoo, initNode) {
 
     ASSERT_TRUE(n);
     ASSERT_EQ(n->fingerprint, fingerprint);
+    ASSERT_FALSE(n->removed);
 }
 
 TEST_F(test_Cuckoo, insert) {
