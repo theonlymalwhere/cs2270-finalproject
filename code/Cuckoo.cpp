@@ -1,6 +1,6 @@
-// Author: Scott Beru
-// Identikey: scbe9211
-// GH Username: scooberu
+// Author: Mallory Beru
+// Identikey: mabe9211
+// GH Username: theonlymalwhere
 
 #include "Cuckoo.h"
 
