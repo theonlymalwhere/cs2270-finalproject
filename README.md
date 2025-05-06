@@ -1,6 +1,6 @@
 # Cuckoo Filter
 #### CS2270 F23 Final Project
-#### Scott Beru | Identikey: scbe9211
+#### Mallory Beru | Identikey: mabe9211
 
 ## Data Structure Overview
 A Cuckoo Filter is a Filter with some unique properties.
